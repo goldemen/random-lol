@@ -1,5 +1,6 @@
 @if (isBrowser) {
-  <h2>Wheel 1 — Role</h2>
+
+  <h2>Wheel 1 Role</h2>
 
   <lib-ng-spinner-wheel
     [width]="width"
@@ -13,24 +14,31 @@
   }
 
   @if (loading) {
-    <p>Loading champions…</p>
+    <p>Loading champions...</p>
   }
 
   @if (error) {
-    <p style="color: #c00">{{ error }}</p>
+    <p style="color: red">{{ error }}</p>
   }
 
-  @if (champions$ | async; as champions) {
-    @if (champions.length > 0) {
-      <h3>Champions ({{ champions.length }})</h3>
+  @if (championWheelItems$ | async; as wheelItems) {
+    @if (wheelItems.length > 0) {
 
-      <ul>
-        @for (c of champions; track c.name) {
-          <li>{{ c.name }}</li>
-        }
-      </ul>
+      <h2>Wheel 2 Champion</h2>
+
+      <lib-ng-spinner-wheel
+        [width]="width"
+        [btnWidth]="btnWidth"
+        [allItems]="wheelItems"
+        (spinCompleted)="handleChampionSpinCompleted($event)"
+      ></lib-ng-spinner-wheel>
     }
   }
+
+  @if (selectedChampion) {
+    <p><strong>Selected champion:</strong> {{ selectedChampion }}</p>
+  }
+
 } @else {
-  <p>Wheel loads in browser…</p>
+  <p>Wheel loads in browser...</p>
 }
