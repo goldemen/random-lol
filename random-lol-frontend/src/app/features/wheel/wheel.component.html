@@ -1,14 +1,17 @@
 @if (isBrowser) {
-
-  <h2>Wheel 1 Role</h2>
-
-  <lib-ng-spinner-wheel
-    [width]="width"
-    [btnWidth]="btnWidth"
-    [allItems]="roleItems"
-    (spinCompleted)="handleRoleSpinCompleted($event)"
-  ></lib-ng-spinner-wheel>
-
+  <div class="wheelContainer">
+    <div class="wheel-pointer">
+      <mat-icon>arrow_downward</mat-icon>
+    </div>
+    <lib-ng-spinner-wheel
+      #roleSpinner
+      (click)="stopWheelTime(roleSpinner)"
+      [width]="wheelWidth"
+      [btnWidth]="btnWidth"
+      [allItems]="roleItems"
+      (spinCompleted)="handleRoleSpinCompleted($event)"
+    ></lib-ng-spinner-wheel>
+  </div>
   @if (selectedRole) {
     <p><strong>Selected role:</strong> {{ selectedRole }}</p>
   }
@@ -23,22 +26,23 @@
 
   @if (championWheelItems$ | async; as wheelItems) {
     @if (wheelItems.length > 0) {
-
-      <h2>Wheel 2 Champion</h2>
-
-      <lib-ng-spinner-wheel
-        [width]="width"
-        [btnWidth]="btnWidth"
-        [allItems]="wheelItems"
-        (spinCompleted)="handleChampionSpinCompleted($event)"
-      ></lib-ng-spinner-wheel>
+      <div class="wheelContainer">
+        <div class="wheel-pointer">
+          <mat-icon>arrow_downward</mat-icon>
+        </div>
+        <lib-ng-spinner-wheel
+          #championSpinner
+          (click)="stopWheelTime(championSpinner)"
+          [width]="wheelWidth"
+          [btnWidth]="btnWidth"
+          [allItems]="wheelItems"
+          (spinCompleted)="handleChampionSpinCompleted($event)"
+        ></lib-ng-spinner-wheel>
+      </div>
     }
   }
 
   @if (selectedChampion) {
     <p><strong>Selected champion:</strong> {{ selectedChampion }}</p>
   }
-
-} @else {
-  <p>Wheel loads in browser...</p>
 }

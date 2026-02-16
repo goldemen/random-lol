@@ -1,0 +1,32 @@
+.wheelContainer {
+  margin-top: 20px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+
+/* Pointer container */
+.wheel-pointer {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 60px;
+  height: 60px;
+}
+
+/* Icon itself */
+.wheel-pointer mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #e53935;
+  filter: drop-shadow(0 2px 2px black);
+}

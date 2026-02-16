@@ -5,14 +5,16 @@ import { ChampionsService } from '../../core/champions.service';
 import { Champion } from '../../core/models/champion.model';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
   selector: 'app-wheel',
   standalone: true,
-  imports: [CommonModule, NgSpinnerWheelComponent],
+  imports: [CommonModule, NgSpinnerWheelComponent,MatIconModule],
   templateUrl: './wheel.component.html',
+  styleUrl:'./wheel.component.css'
 })
 export class WheelComponent {
-
   // Platform identifier used to detect if code runs in browser
   private platformId = inject(PLATFORM_ID);
 
@@ -20,26 +22,22 @@ export class WheelComponent {
   isBrowser = isPlatformBrowser(this.platformId);
 
   // Reference to the first wheel component instance
-  @ViewChild('spinner', { static: false }) spinnerRef?: NgSpinnerWheelComponent;
+  @ViewChild('roleSpinner', { static: false }) roleSpinnerRef?: NgSpinnerWheelComponent;
+  @ViewChild('championSpinner', { static: false }) championSpinnerRef?: NgSpinnerWheelComponent;
 
   // Service used to retrieve champions from backend
   private championsService = inject(ChampionsService);
 
   // Width of the spin button inside the wheel
   btnWidth = 60;
-
   // Width of the wheel
-  width = 420;
-
+  wheelWidth = 420;
   // Currently selected role from first wheel
   selectedRole: string | null = null;
-
   // Observable containing champions returned from backend
   champions$: Observable<Champion[]> = of([]);
-
   // Loading state while fetching champions
   loading = false;
-
   // Error message if backend request fails
   error: string | null = null;
 
@@ -57,26 +55,21 @@ export class WheelComponent {
 
   // Called when the first wheel spin is completed
   handleRoleSpinCompleted(item: MenuItems) {
-
     // Extract selected role from wheel result
-    const role = (item.menuTitle);
-
+    const role = item.menuTitle;
     // Store selected role
     this.selectedRole = role;
-
     // Reset previously selected champion
     this.selectedChampion = null;
-
     // Enable loading state
     this.loading = true;
-
     // Reset previous error
     this.error = null;
 
     // Request champions corresponding to selected role
-    this.champions$ = this.championsService.getChampionItemsByRole(role).pipe(
-      tap(() => (this.loading = false))
-    );
+    this.champions$ = this.championsService
+      .getChampionItemsByRole(role)
+      .pipe(tap(() => (this.loading = false)));
 
     // Build second wheel items from champions list
     this.championWheelItems$ = this.champions$.pipe(
@@ -84,7 +77,7 @@ export class WheelComponent {
         champions.map((champion) => ({
           Id: champion.name,
           menuTitle: champion.name,
-          backColor: this.colorFromString(champion.name),
+          backColor: this.randomColor(),
           textColor: '#000',
         })),
       ),
@@ -97,20 +90,34 @@ export class WheelComponent {
       champions.map((c) => ({
         Id: c.name,
         menuTitle: c.name,
-        backColor: this.colorFromString(c.name),
+        backColor: this.randomColor(),
         textColor: '#000',
       })),
     ),
   );
 
-  // Generate a deterministic color based on input string
-  private colorFromString(input: string): string {
-    let hash = 0;
-    for (let i = 0; i < input.length; i++) {
-      hash = (hash * 31 + input.charCodeAt(i)) | 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 75%, 45%)`;
+  stopWheelTime(spinner?: NgSpinnerWheelComponent) {
+    if (!spinner) return;
+
+    window.setTimeout(
+      () => {
+        spinner.stops();
+      },
+      this.randomInt(3000, 5000),
+    );
+  }
+
+  // generate number between an interval
+  private randomInt(min: number, max: number) {
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    console.log('wheel stopped in : ', randomNumber);
+    return randomNumber;
+  }
+
+  // Generate a random color
+  private randomColor(): string {
+    var color = Math.floor(0x1000000 * Math.random()).toString(16);
+    return '#' + ('000000' + color).slice(-6);
   }
 
   // Called when the second wheel spin is completed
