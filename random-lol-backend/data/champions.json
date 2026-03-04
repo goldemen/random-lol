@@ -168,5 +168,7 @@
   "Ziggs": ["adc", "mid"],
   "Zilean": ["support", "mid"],
   "Zoé": ["mid"],
-  "Zyra": ["support", "mid"]
+  "Zyra": ["support", "mid"],
+  "Yunara": ["adc"],
+  "Zaahen": ["top","jungle"]
 }
