@@ -29,9 +29,9 @@ export class WheelComponent {
   private championsService = inject(ChampionsService);
 
   // Width of the spin button inside the wheel
-  btnWidth = 60;
+  btnWidth = 50;
   // Width of the wheel
-  wheelWidth = 420;
+  wheelWidth = 350;
   // Currently selected role from first wheel
   selectedRole: string | null = null;
   // Observable containing champions returned from backend

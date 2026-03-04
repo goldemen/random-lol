@@ -34,3 +34,8 @@
 
   filter: drop-shadow(0 0.125rem 0.125rem black);
 }
+
+.result{
+  text-align: center;
+  margin :2rem;
+}

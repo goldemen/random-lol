@@ -1,48 +1,128 @@
 @if (isBrowser) {
-  <div class="wheelContainer">
-    <div class="wheel-pointer">
-      <mat-icon>arrow_downward</mat-icon>
+  <div class="min-h-screen bg-zinc-950 text-white">
+    <!-- Background glow -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div class="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-red-500/10 blur-3xl"></div>
+      <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl"></div>
     </div>
-    <lib-ng-spinner-wheel
-      #roleSpinner
-      (click)="stopWheelTime(roleSpinner)"
-      [width]="wheelWidth"
-      [btnWidth]="btnWidth"
-      [allItems]="roleItems"
-      (spinCompleted)="handleRoleSpinCompleted($event)"
-    ></lib-ng-spinner-wheel>
-  </div>
-  @if (selectedRole) {
-    <p><strong>Selected role:</strong> {{ selectedRole }}</p>
-  }
 
-  @if (loading) {
-    <p>Loading champions...</p>
-  }
-
-  @if (error) {
-    <p style="color: red">{{ error }}</p>
-  }
-
-  @if (championWheelItems$ | async; as wheelItems) {
-    @if (wheelItems.length > 0) {
-      <div class="wheelContainer">
-        <div class="wheel-pointer">
-          <mat-icon>arrow_downward</mat-icon>
-        </div>
-        <lib-ng-spinner-wheel
-          #championSpinner
-          (click)="stopWheelTime(championSpinner)"
-          [width]="wheelWidth"
-          [btnWidth]="btnWidth"
-          [allItems]="wheelItems"
-          (spinCompleted)="handleChampionSpinCompleted($event)"
-        ></lib-ng-spinner-wheel>
+    <div class="relative mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-10 px-6 py-12">
+      <!-- Header -->
+      <div class="text-center space-y-3">
+        <h1 class="text-4xl font-extrabold tracking-tight">
+          <span class="bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">
+            Random LoL
+          </span>
+        </h1>
+        <p class="text-zinc-300">
+          Spin the role wheel, then spin the champion wheel.
+        </p>
       </div>
-    }
-  }
 
-  @if (selectedChampion) {
-    <p><strong>Selected champion:</strong> {{ selectedChampion }}</p>
-  }
+      <!-- Role card -->
+      <section class="w-full rounded-3xl border border-white/10 bg-zinc-900/60 p-6 shadow-2xl backdrop-blur">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-lg font-semibold text-zinc-100">Role</h2>
+          <span class="rounded-full bg-white/5 px-3 py-1 text-xs text-zinc-300">
+            Clique sur la roue
+          </span>
+        </div>
+
+        <div class="mt-6 flex items-center justify-center">
+          <div class="wheelContainer">
+            <div class="wheel-pointer">
+              <mat-icon class="text-red-500 drop-shadow-lg">arrow_downward</mat-icon>
+            </div>
+
+            <lib-ng-spinner-wheel
+              #roleSpinner
+              (click)="stopWheelTime(roleSpinner)"
+              [width]="wheelWidth"
+              [btnWidth]="btnWidth"
+              [allItems]="roleItems"
+              (spinCompleted)="handleRoleSpinCompleted($event)"
+            ></lib-ng-spinner-wheel>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          @if (selectedRole) {
+            <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+              <div class="text-sm text-zinc-300">Role </div>
+              <div class="text-xl font-bold tracking-tight text-zinc-100">
+                {{ selectedRole }}
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-zinc-400">
+              Spin the first wheel to pick a role.
+            </div>
+          }
+        </div>
+
+        @if (loading) {
+          <div class="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-zinc-300">
+            <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white/80"></span>
+            Chargement...
+          </div>
+        }
+
+        @if (error) {
+          <div class="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+            {{ error }}
+          </div>
+        }
+      </section>
+
+      <!-- Champion card -->
+      <section class="w-full rounded-3xl border border-white/10 bg-zinc-900/60 p-6 shadow-2xl backdrop-blur">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-lg font-semibold text-zinc-100">Champion</h2>
+          <span class="rounded-full bg-white/5 px-3 py-1 text-xs text-zinc-300">
+            Appears after role selection
+          </span>
+        </div>
+
+        @if (championWheelItems$ | async; as wheelItems) {
+          @if (wheelItems.length > 0) {
+            <div class="mt-6 flex items-center justify-center">
+              <div class="wheelContainer">
+                <div class="wheel-pointer">
+                  <mat-icon class="text-red-500 drop-shadow-lg">arrow_downward</mat-icon>
+                </div>
+
+                <lib-ng-spinner-wheel
+                  #championSpinner
+                  (click)="stopWheelTime(championSpinner)"
+                  [width]="wheelWidth"
+                  [btnWidth]="btnWidth"
+                  [allItems]="wheelItems"
+                  (spinCompleted)="handleChampionSpinCompleted($event)"
+                ></lib-ng-spinner-wheel>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              @if (selectedChampion) {
+                <div class="rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-6 py-5 shadow-xl">
+                  <div class="text-sm text-white/80">Champion selected</div>
+                  <div class="mt-1 text-2xl font-extrabold tracking-tight text-white">
+                    {{ selectedChampion }}
+                  </div>
+                </div>
+              } @else {
+                <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-zinc-400">
+                  Spin the second wheel to pick a champion.
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-zinc-400">
+              Select a role first. The champion wheel will appear here.
+            </div>
+          }
+        }
+      </section>
+    </div>
+  </div>
 }
