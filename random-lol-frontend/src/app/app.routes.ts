@@ -7,6 +7,5 @@ export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'champions', component: ChampionsComponent },
   { path: 'home', component: HomeComponent },
-  { path: 'wheel', component: WheelComponent },
-  { path: '**', redirectTo: 'home' }
+  { path: 'wheel', component: WheelComponent }
 ];
