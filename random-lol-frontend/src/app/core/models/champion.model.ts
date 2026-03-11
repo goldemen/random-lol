@@ -8,3 +8,8 @@ export interface ChampionsByRole {
   count: number;
   champions: Champion[];
 }
+
+export interface ChampionRow {
+  name: string;
+  roles: string[];
+}

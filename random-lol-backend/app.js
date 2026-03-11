@@ -1,20 +1,32 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
+const { Pool } = require("pg");
+require("dotenv").config();
 
 const app = express();
 
-app.use(cors({
-  origin: '*', // autorise toutes les origines
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
-}));
+app.use(
+  cors({
+    origin: "*", // autorise toutes les origines
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+  }),
+);
 app.use(express.json());
 
-const champions = require('./data/champions.json');
+const champions = require("./data/champions.json");
 
 const PORT = process.env.PORT || 3000;
 
 const api = express.Router();
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
 
 // constantes
 const roles = {
@@ -22,106 +34,116 @@ const roles = {
   2: "jungle",
   3: "mid",
   4: "adc",
-  5: "support"
+  5: "support",
 };
 
 // Functions
 function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
+  return Math.floor(Math.random() * max);
 }
 
-api.get('/roles', function(req,res){
-    res.json(roles);
-})
+api.get("/roles", function (req, res) {
+  res.json(roles);
+});
 
-// Endpoints 
-// app.get('/fullRandom')
+// endpoints
+api.get("/numero", function (req, res) {
+  const randomNumber = getRandomInt(169) + 1;
+  res.json({ number: randomNumber });
+});
 
-api.get('/numero', function (req, res) {
-    const randomNumber = getRandomInt(169) + 1;
-    res.json({ number: randomNumber });
-})
+api.get("/randomRole", function (req, res) {
+  const randomNumber = getRandomInt(5) + 1;
+  res.json(roles[randomNumber]);
+});
 
-api.get('/randomRole', function(req,res){
-    const randomNumber = getRandomInt(5) + 1;
-    res.json(roles[randomNumber]);
-})
-
-api.get('/championsByRole', (req, res) => {
-  const role = (req.query.role || '').toString().trim().toLowerCase();
+api.get("/championsByRole", async (req, res) => {
+  const role = (req.query.role || "").toString().trim().toLowerCase();
 
   if (!role) {
     return res.status(400).json({ error: 'Query param "role" is required (ex: ?role=mid).' });
   }
 
-  // champions est supposé être un objet: { "Ahri": ["mid"], "Garen": ["top"], ... }
-  const matchingChampions = Object.entries(champions)
-    .filter(([_, roles]) => Array.isArray(roles) && roles.map(r => String(r).toLowerCase()).includes(role))
-    .map(([name, roles]) => ({ name, roles }));
+  try {
+    const result = await pool.query("SELECT name, roles FROM champions WHERE $1 = ANY(roles)", [role]);
 
-  if (matchingChampions.length === 0) {
-    return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
-  }
-
-  return res.json({
-    role,
-    count: matchingChampions.length,
-    champions: matchingChampions
-  });
-});
-
-api.get('/randomChampion', function (req, res) {
-    const role = req.query.role;
-
-    // Si aucun rôle n'est précisé, renvoyer un champion aléatoire
-    if (!role) {
-        const championNames = Object.keys(champions);
-        const randomIndex = getRandomInt(championNames.length);
-        const name = championNames[randomIndex];
-        return res.json({ name, roles: champions[name] });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
     }
 
-    // Sinon, filtrer les champions ayant ce rôle
-    const matchingChampions = Object.entries(champions).filter(([_, roles]) =>
-        roles.includes(role)
-    );
-
-    if (matchingChampions.length === 0) {
-        return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
-    }
-
-    const [name, roles] = matchingChampions[getRandomInt(matchingChampions.length)];
-    res.json({ name, roles });
-});
-
-api.get('/champions', function (req, res) {
-    const result = champions;
-
-    res.json(result);
-});
-
-// Liste tags	
-// Fighter	59
-// Mage	75
-// Assassin	45
-// Marksman	32
-// Tank	45
-// Support	43
-api.get('/tags', function (req, res) {
-    const tagCounts = {};
-
-    Object.values(champions.data).forEach(champion => {
-        champion.tags.forEach(tag => {
-            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
+    return res.json({
+      role,
+      count: result.rows.length,
+      champions: result.rows,
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
+//add champion
+api.post("/addChampion",async function (req,res){
+    const name=
+})
+
+api.get("/randomChampion", async function (req, res) {
+  const role = req.query.role;
+
+  try {
+    if (!role) {
+      const result = await pool.query("SELECT name, roles FROM champions ORDER BY RANDOM() LIMIT 1");
+      return res.json(result.rows[0]);
+    }
+
+    const result = await pool.query("SELECT name, roles FROM champions WHERE $1 = ANY(roles) ORDER BY RANDOM() LIMIT 1", [role]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+api.get('/champions', async function (req, res) {
+    try {
+      const result = await pool.query('SELECT name, roles FROM champions');
+      const champions = result.rows.map(row => ({
+        name: row.name,
+        roles: Array.isArray(row.roles) ? row.roles : [], // Ensure it's an array
+      }));
+      res.json(champions);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+api.get("/tags", async function (req, res) {
+  try {
+    const result = await pool.query(`
+        SELECT tag, COUNT(*) as count
+        FROM champions, unnest(tags) as tag
+        GROUP BY tag
+      `);
+    const tagCounts = result.rows.reduce((acc, row) => {
+      acc[row.tag] = row.count;
+      return acc;
+    }, {});
     res.json(tagCounts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // ajouter le '/api' pour express
-app.use('/api', api);
+app.use("/api", api);
 
 app.listen(PORT, () => {
-    console.log("Server Listening on PORT:", PORT);
+  console.log("Server Listening on PORT:", PORT);
 });
