@@ -31,5 +31,28 @@ export class ChampionsService {
   getChampionItemsByRole(role: string): Observable<Champion[]> {
     return this.getChampionsByRole(role).pipe(map((res) => res.champions));
   }
+
+  // POST: Add a new champion
+  postChampion(name: string, roles: string[]): Observable<ChampionRow> {
+    const apiUrl = isPlatformServer(this.platformId)
+      ? 'http://localhost:3000/api/addChampion'
+      : '/api/addChampion';
+
+    return this.http
+      .post<ChampionRow>(apiUrl, { name, roles })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
+
+  // PUT: Update roles of an existing champion
+  putChampionRoles(name: string, roles: string[]): Observable<ChampionRow> {
+    console.log('name : ', name, ' roles : ', roles);
+    const apiUrl = isPlatformServer(this.platformId)
+      ? `http://localhost:3000/api/modifyRoles/${name}/roles`
+      : `/api/modifyRoles/${name}/roles`;
+
+    return this.http
+      .put<ChampionRow>(apiUrl, { roles })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
   // constructor() {}
 }

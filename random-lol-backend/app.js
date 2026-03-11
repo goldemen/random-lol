@@ -47,28 +47,26 @@ api.get("/roles", function (req, res) {
 });
 
 // endpoints
-api.get("/numero", function (req, res) {
-  const randomNumber = getRandomInt(169) + 1;
-  res.json({ number: randomNumber });
-});
 
+// genere un chiffre de 1 a 5
 api.get("/randomRole", function (req, res) {
   const randomNumber = getRandomInt(5) + 1;
   res.json(roles[randomNumber]);
 });
 
+// recupere la liste des champion en passant en parametre un role
 api.get("/championsByRole", async (req, res) => {
   const role = (req.query.role || "").toString().trim().toLowerCase();
 
   if (!role) {
-    return res.status(400).json({ error: 'Query param "role" is required (ex: ?role=mid).' });
+    return res.status(400).json({ error: "Rôle non defini dans les parametres." });
   }
 
   try {
     const result = await pool.query("SELECT name, roles FROM champions WHERE $1 = ANY(roles)", [role]);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
+      return res.status(404).json({ error: `Aucun champion ne correspond au rôle : "${role}"` });
     }
 
     return res.json({
@@ -83,12 +81,53 @@ api.get("/championsByRole", async (req, res) => {
 });
 
 //add champion
-api.post("/addChampion",async function (req,res){
-    const name=
-})
+api.post("/addChampion", async (req, res) => {
+  const { name, roles } = req.body;
 
+  if (!name || !roles) {
+    return res.status(400).json({ error: "Name and roles are required." });
+  }
+
+  try {
+    const result = await pool.query("INSERT INTO champions (name, roles) VALUES ($1, $2) RETURNING *", [name, roles]);
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// update les roles d'un champion
+api.put("/modifyRoles/:name/roles", async (req, res) => {
+  const { name } = req.params;
+  const { roles } = req.body;
+
+  console.log('name : ', name, ' roles : ', roles);
+
+  if (!roles) {
+    return res.status(400).json({ error: "Roles are required." });
+  }
+
+  try {
+    const result = await pool.query("UPDATE champions SET roles = $1 WHERE name = $2 RETURNING *", [roles, name]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: `Champion "${name}" not found.` });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// champion aleatoire (avec possibilité de passé en parametre un role)
 api.get("/randomChampion", async function (req, res) {
   const role = req.query.role;
+
+  console.log('roles : ',role);
 
   try {
     if (!role) {
@@ -109,32 +148,14 @@ api.get("/randomChampion", async function (req, res) {
   }
 });
 
-api.get('/champions', async function (req, res) {
-    try {
-      const result = await pool.query('SELECT name, roles FROM champions');
-      const champions = result.rows.map(row => ({
-        name: row.name,
-        roles: Array.isArray(row.roles) ? row.roles : [], // Ensure it's an array
-      }));
-      res.json(champions);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-api.get("/tags", async function (req, res) {
+api.get("/champions", async function (req, res) {
   try {
-    const result = await pool.query(`
-        SELECT tag, COUNT(*) as count
-        FROM champions, unnest(tags) as tag
-        GROUP BY tag
-      `);
-    const tagCounts = result.rows.reduce((acc, row) => {
-      acc[row.tag] = row.count;
-      return acc;
-    }, {});
-    res.json(tagCounts);
+    const result = await pool.query("SELECT name, roles FROM champions");
+    const champions = result.rows.map((row) => ({
+      name: row.name,
+      roles: Array.isArray(row.roles) ? row.roles : [], // Ensure it's an array
+    }));
+    res.json(champions);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });

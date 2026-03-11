@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Modifier les rôles pour {{ data.name }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <!-- <mat-form-field appearance="fill" style="width: 100%;">
+      <mat-label>Nouveaux rôles</mat-label>
+      <input matInput formControlName="roles" placeholder="Ex: top,mid" />
+    </mat-form-field> -->
+    <mat-form-field>
+      <mat-label>Roles</mat-label>
+      <mat-select formControlName="roles" multiple>
+        <!-- <mat-select-trigger>
+          {{ roles.value || '' }}
+        </mat-select-trigger> -->
+        @for (role of rolesList; track role) {
+          <mat-option [value]="role">{{ role }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Annuler</button>
+  <button mat-button color="primary" (click)="onSubmit()">Mettre à jour</button>
+</mat-dialog-actions>
