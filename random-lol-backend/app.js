@@ -125,20 +125,28 @@ api.put("/modifyRoles/:name/roles", async (req, res) => {
 
 // champion aleatoire (avec possibilité de passé en parametre un role)
 api.get("/randomChampion", async function (req, res) {
-  const role = req.query.role;
+  const roles = req.query.role;
 
-  console.log('roles : ',role);
+  // console.log('roles:', roles);
 
   try {
-    if (!role) {
+    // Si pas de role selectionner alors just full aleatoire
+    if (!roles) {
       const result = await pool.query("SELECT name, roles FROM champions ORDER BY RANDOM() LIMIT 1");
       return res.json(result.rows[0]);
     }
 
-    const result = await pool.query("SELECT name, roles FROM champions WHERE $1 = ANY(roles) ORDER BY RANDOM() LIMIT 1", [role]);
+    // convertie le string en un array 
+    const rolesArray = Array.isArray(roles) ? roles : roles.split(',');
+
+    // Use ANY with an array of roles
+    const result = await pool.query(
+      "SELECT name, roles FROM champions WHERE roles && $1::text[] ORDER BY RANDOM() LIMIT 1",
+      [rolesArray]
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: `Aucun champion trouvé pour le rôle "${role}"` });
+      return res.status(404).json({ error: `Aucun champion trouvé pour les rôles "${rolesArray.join(', ')}"` });
     }
 
     res.json(result.rows[0]);
