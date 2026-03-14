@@ -1,0 +1,30 @@
+/* Center text in all cells */
+td, th {
+  text-align: center;
+}
+
+/* Style for the "Roles" column cell */
+.roles-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+/* Optional: Add some margin to the button */
+.roles-cell button {
+  position: absolute;
+  right: 0;
+}
+
+mat-form-field{
+  width: 100%;
+  text-align: center;
+  align-items: center;
+}
+
+input ,input[matInput]::placeholder{
+  text-align: center;
+  align-items: center;
+}
