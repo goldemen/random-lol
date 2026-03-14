@@ -45,7 +45,7 @@ export class ChampionsService {
 
   // PUT: Update roles of an existing champion
   putChampionRoles(name: string, roles: string[]): Observable<ChampionRow> {
-    console.log('name : ', name, ' roles : ', roles);
+    // console.log('name : ', name, ' roles : ', roles);
     const apiUrl = isPlatformServer(this.platformId)
       ? `http://localhost:3000/api/modifyRoles/${name}/roles`
       : `/api/modifyRoles/${name}/roles`;
@@ -53,6 +53,15 @@ export class ChampionsService {
     return this.http
       .put<ChampionRow>(apiUrl, { roles })
       .pipe(catchError((err) => throwError(() => err)));
+  }
+
+  // random champion avec role en parametre
+  getRandomChampion(role?: string) {
+    const apiUrl = isPlatformServer(this.platformId)
+      ? `http://localhost:3000/api/randomChampion?role=${role}`
+      : `/api/randomChampion?role=${role}`;
+
+    return this.http.get<Champion>(apiUrl).pipe(catchError((err) => throwError(() => err)));
   }
   // constructor() {}
 }

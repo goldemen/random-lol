@@ -1,0 +1,51 @@
+<p>Selectionnés le ou les roles puis cliquer sur confirmer</p>
+
+<form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+  <mat-form-field>
+    <mat-label>Roles</mat-label>
+    <mat-select formControlName="roles" multiple>
+      @for (role of rolesList; track role) {
+        <mat-option [value]="role">{{ role }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit">Confirmer</button>
+</form>
+
+<!-- @if (randomChamp) {
+  <div>{{ randomChamp.name }}</div>
+  @for (role of randomChamp.roles; track role) {
+    <span>{{ role }}</span>
+    @if (!$last) {
+      <span>, </span>
+    }
+  }
+} @else {
+  Aucun champion generer
+} -->
+
+@if (championHistory.length > 0) {
+  <table mat-table [dataSource]="championHistory">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Nom</th>
+      <td mat-cell *matCellDef="let champion">{{ champion.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="roles">
+      <th mat-header-cell *matHeaderCellDef>Roles</th>
+      <td mat-cell *matCellDef="let champion">
+        @for (role of champion.roles; track role) {
+          <span>{{ role }}</span>
+          @if (!$last) {
+            <span>, </span>
+          }
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+} @else {
+  <p>Aucun champion dans l'historique ...</p>
+}

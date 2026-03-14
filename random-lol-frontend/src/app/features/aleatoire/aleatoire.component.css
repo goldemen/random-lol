@@ -1,0 +1,15 @@
+.snackBar{
+  margin-top: 10vh;
+}
+
+::ng-deep .mat-mdc-snack-bar-container{
+  margin-top: 2vh;
+}
+
+.tableCell .tableHeader{
+  text-align: center;
+}
+
+td, th {
+  text-align: center;
+}
